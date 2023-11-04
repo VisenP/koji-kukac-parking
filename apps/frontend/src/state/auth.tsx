@@ -1,4 +1,4 @@
-import { User } from "@kontestis/models";
+import { User } from "@parking/models";
 import { create } from "zustand";
 
 import { useTokenStore } from "./token";

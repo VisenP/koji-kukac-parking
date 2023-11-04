@@ -1,4 +1,4 @@
-import { Snowflake } from "@kontestis/models";
+import { Snowflake } from "@parking/models";
 import { decode, generateSunflake, SunflakeConfig } from "sunflake";
 
 const sunflakeConfig: SunflakeConfig<"bigint"> = {

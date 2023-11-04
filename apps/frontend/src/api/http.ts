@@ -1,4 +1,4 @@
-import { safeParseJson } from "@kontestis/utils";
+import { safeParseJson } from "@parking/utils";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import contentType from "content-type";
 import {
@@ -13,7 +13,6 @@ import { z } from "zod";
 
 import { useAuthStore } from "../state/auth";
 import { useBackendError } from "../state/backendError";
-import { useOrganisationStore } from "../state/organisation";
 import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
 import { HttpError } from "./HttpError";
@@ -68,11 +67,8 @@ http.interceptors.request.use((config) => {
         useProcessingLoader.getState().startProcessing();
 
     const { token } = useTokenStore.getState();
-    const { isSelected, organisationId } = useOrganisationStore.getState();
 
     if (token.length > 0) config.headers.set("Authorization", `Bearer ${token}`);
-
-    if (isSelected) config.headers.set("X-Kontestis-Org-Id", organisationId.toString());
 
     return config;
 });

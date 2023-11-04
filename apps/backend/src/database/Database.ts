@@ -1,4 +1,4 @@
-import { User } from "@kontestis/models";
+import { User } from "@parking/models";
 import { Migration, ScylloClient } from "scyllo";
 
 import { Globals } from "../globals";

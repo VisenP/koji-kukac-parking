@@ -1,4 +1,4 @@
-import { Snowflake } from "@kontestis/models";
+import { Snowflake } from "@parking/models";
 import { useMutation } from "react-query";
 
 import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../api/http";

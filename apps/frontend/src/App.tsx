@@ -1,12 +1,14 @@
 import "twin.macro";
 import "./globals.scss";
 
-import { User } from "@kontestis/models";
-import React, { useEffect } from "react";
+import { User } from "@parking/models";
+import { useEffect } from "react";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
+import { useRoutes } from "react-router";
 
 import { http, wrapAxios } from "./api/http";
+import { loginRoutes } from "./routers/login";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
 
@@ -38,7 +40,7 @@ export const App = () => {
             .catch(() => doForceLogout());
     }, [token]);
 
-    if (token.length > 0 && !isLoggedIn) return <></>;
+    if (token.length > 0 && !isLoggedIn) return useRoutes(loginRoutes);
 
-    return null;
+    return useRoutes(loginRoutes);
 };

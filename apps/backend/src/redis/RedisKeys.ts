@@ -1,4 +1,4 @@
-import { Snowflake } from "@kontestis/models";
+import { Snowflake } from "@parking/models";
 
 export const RedisKeys = {
     // might be best to replace this with some set approach later on

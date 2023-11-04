@@ -1,5 +1,5 @@
 {
-    "name": "@kontestis/backend",
+    "name": "@parking/backend",
     "version": "1.0.0",
     "main": "src/app.ts",
     "license": "MIT",
@@ -12,8 +12,8 @@
     "dependencies": {
         "@influxdata/influxdb-client": "^1.33.2",
         "@influxdata/influxdb-client-apis": "^1.33.2",
-        "@kontestis/models": "workspace:^1.0.0",
-        "@kontestis/utils": "workspace:^1.0.0",
+        "@parking/models": "workspace:^1.0.0",
+        "@parking/utils": "workspace:^1.0.0",
         "@kubernetes/client-node": "^0.18.1",
         "@lvksh/logger": "^1.6.4",
         "@sinclair/typebox": "^0.26.8",

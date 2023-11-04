@@ -1,4 +1,4 @@
-import { UserV1 } from "@kontestis/models";
+import { UserV1 } from "@parking/models";
 import { Migration } from "scyllo";
 
 type InitialDB = {

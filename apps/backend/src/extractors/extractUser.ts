@@ -1,4 +1,4 @@
-import { User } from "@kontestis/models";
+import { User } from "@parking/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 

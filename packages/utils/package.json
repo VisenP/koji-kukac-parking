@@ -1,5 +1,5 @@
 {
-    "name": "@kontestis/utils",
+    "name": "@parking/utils",
     "version": "1.0.0",
     "main": "src/index.ts",
     "license": "MIT",

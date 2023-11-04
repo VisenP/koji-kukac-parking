@@ -44,10 +44,10 @@ importers:
       '@influxdata/influxdb-client-apis':
         specifier: ^1.33.2
         version: 1.33.2(@influxdata/influxdb-client@1.33.2)
-      '@kontestis/models':
+      '@parking/models':
         specifier: workspace:^1.0.0
         version: link:../../packages/models
-      '@kontestis/utils':
+      '@parking/utils':
         specifier: workspace:^1.0.0
         version: link:../../packages/utils
       '@kubernetes/client-node':
@@ -156,10 +156,10 @@ importers:
       '@hookform/resolvers':
         specifier: ^2.9.11
         version: 2.9.11(react-hook-form@7.43.1)
-      '@kontestis/models':
+      '@parking/models':
         specifier: workspace:^1.0.0
         version: link:../../packages/models
-      '@kontestis/utils':
+      '@parking/utils':
         specifier: workspace:^1.0.0
         version: link:../../packages/utils
       '@react-oauth/google':

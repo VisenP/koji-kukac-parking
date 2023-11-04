@@ -24,6 +24,6 @@ export const Globals: GlobalsType = {
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
     influxUrl: process.env.INFLUXDB_URL ?? "http://localhost:8086",
     influxToken: process.env.INFLUXDB_TOKEN ?? "devtoken",
-    influxOrg: process.env.INFLUXDB_ORG ?? "kontestis-org",
-    influxBucket: process.env.INFLUXDB_BUCKET ?? "kontestis",
+    influxOrg: process.env.INFLUXDB_ORG ?? "parking-org",
+    influxBucket: process.env.INFLUXDB_BUCKET ?? "parking",
 };

@@ -1,7 +1,7 @@
 {
-    "name": "kontestis",
+    "name": "parking",
     "version": "1.0.0",
-    "repository": "https://github.com/ItKlubBozoLagan/kontestis",
+    "repository": "https://github.com/ItKlubBozoLagan/parking",
     "license": "MIT",
     "private": true,
     "scripts": {

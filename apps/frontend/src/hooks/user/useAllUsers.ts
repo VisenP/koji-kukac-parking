@@ -1,4 +1,4 @@
-import { User } from "@kontestis/models";
+import { User } from "@parking/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
