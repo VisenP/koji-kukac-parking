@@ -82,7 +82,11 @@ export const wrapper = async () => {
                 for (const event of events) {
                     console.table(event.body);
                     const id = event.body["Id"];
-                    const occupied = event.body["Occupied"];
+                    const occupied = event.body["IsOccupied"];
+
+                    console.log(typeof occupied);
+
+                    console.log(occupied);
 
                     await Database.update(
                         "parking_spots",

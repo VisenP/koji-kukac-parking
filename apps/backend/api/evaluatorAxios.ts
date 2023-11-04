@@ -1,7 +1,6 @@
 import axios from "axios";
 
 export const parkingAxios = axios.create({
-    baseURL: "kojikukac.com/api",
     timeout: 60_000,
 });
 
