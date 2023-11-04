@@ -1,0 +1,11 @@
+.idea/
+node_modules/
+.env
+pruned/
+.fleet/
+global.env
+coverage/
+
+tools/**
+!tools/.gitkeep
+tsconfig.tsbuildinfo

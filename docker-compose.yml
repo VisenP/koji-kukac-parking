@@ -1,0 +1,77 @@
+# Used in development
+
+version: "2"
+services:
+  frontend:
+    image: "node:hydrogen-alpine"
+    tty: true
+    volumes:
+      - ".:/app"
+    working_dir: "/app/apps/frontend"
+    command: "npm run dev -- --host"
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_ENDPOINT=http://localhost:8080
+
+  backend:
+    image: "node:hydrogen-alpine"
+    tty: true
+    volumes:
+      - ".:/app"
+    working_dir: "/app/apps/backend"
+    command: "npm run dev"
+    depends_on:
+      scylla:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    env_file:
+      - "global.env"
+    environment:
+      - MODE=development
+      - PORT=8080
+      - DB_HOST=scylla
+      - DB_PORT=9042
+      - DB_KEYSPACE=kontestis
+      - DB_DATACENTER=datacenter1
+      - REDIS_URL=redis://redis:6379
+      - INFLUXDB_URL=http://influxdb:8086
+
+  scylla:
+    image: "scylladb/scylla:5.1.7"
+    command: "--smp 1 --skip-wait-for-gossip-to-settle 0 --developer-mode 1"
+    ports:
+      - "9042:9042"
+    volumes:
+      - "./tools/scylla:/var/lib/scylla"
+    healthcheck:
+      test: cqlsh -e "exit"
+      interval: 2s
+      retries: 10
+      start_period: 10s
+      timeout: 10s
+
+  redis:
+    image: "redis:latest"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+
+  influxdb:
+    image: influxdb:2.6-alpine
+    volumes:
+      - "./tools/influx:/var/lib/influxdb2"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=root
+      - DOCKER_INFLUXDB_INIT_PASSWORD=root1234
+      - DOCKER_INFLUXDB_INIT_ORG=kontestis-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=kontestis
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=devtoken
+      - TZ=Europe/Zagreb
+    ports:
+      - "8086:8086"

@@ -1,0 +1,19 @@
+{
+    "name": "@kontestis/utils",
+    "version": "1.0.0",
+    "main": "src/index.ts",
+    "license": "MIT",
+    "scripts": {
+        "test": "jest --verbose --coverage"
+    },
+    "dependencies": {
+        "typescript": "^4.9.4"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.5.0",
+        "@jest/types": "^29.5.0",
+        "jest": "^29.5.0",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1"
+    }
+}

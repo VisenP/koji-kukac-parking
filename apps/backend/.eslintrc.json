@@ -1,0 +1,14 @@
+{
+   "rules": {
+       "unicorn/prevent-abbreviations": [
+            "error",
+            {
+                "allowList": {
+                    "req": true,
+                    "res": true
+                }
+            }
+        ]
+   }
+}
+
