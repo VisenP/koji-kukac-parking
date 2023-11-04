@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 const apiURL = "https://hackathon.kojikukac.com/";
 const apiKey = "3f70fbfa-0301-484a-a4cf-4081431bcffa";
 
+const googleMapsApiKey = "AIzaSyCFihZ30ZpuLjeO8JOQCT4k-mnRR26hnjM";
+
 const containerStyle = {
     width: "100vw",
     height: "100vh",
@@ -22,31 +24,13 @@ type ParkingSpot = {
     parkingSpotZone: string;
 };
 
-const initClusters = (map) => {
-    const markers = [];
-    const clusterOptions = {
-        gridSize: 40,
-        maxZoom: 20,
-        styles: [
-            {
-                url: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m2.png",
-                height: 50,
-                width: 50,
-            },
-        ],
-    };
-
-    return new MarkerClusterer(map, markers, clusterOptions);
-};
-
 export const MyMap = () => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
-        googleMapsApiKey: "AIzaSyCFihZ30ZpuLjeO8JOQCT4k-mnRR26hnjM",
+        googleMapsApiKey: googleMapsApiKey,
     });
 
     const [map, setMap] = useState(null);
-
     const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
 
     useEffect(() => {
@@ -63,33 +47,15 @@ export const MyMap = () => {
         });
     }, []);
 
-    const onLoad = useCallback(
-        (map) => {
-            console.log("Load map: " + map);
-
-            const bounds = new window.google.maps.LatLngBounds(center);
-
-            //map.fitBounds(bounds);
-
-            setMap(map);
-
-            const markers = parkingSpots.map(
-                (spot) =>
-                    new window.google.maps.Marker({
-                        position: { lat: spot.latitude, lng: spot.longitude },
-                        // Add other marker options here
-                    })
-            );
-
-            new MarkerClusterer(map, markers);
-        },
-        [parkingSpots]
-    );
+    const onLoad = useCallback((map) => {
+        setMap(map);
+    }, []);
 
     const onUnmount = useCallback(() => {
         setMap(null);
     }, []);
 
+    // @ts-ignore
     return isLoaded ? (
         <GoogleMap
             mapContainerStyle={containerStyle}
@@ -98,34 +64,46 @@ export const MyMap = () => {
             onLoad={onLoad}
             onUnmount={onUnmount}
         >
-            {parkingSpots.map((parkingSpot) => (
-                <Marker
-                    icon={
-                        parkingSpot.occupied
-                            ? {
-                                  path: window.google.maps.SymbolPath.CIRCLE,
-                                  scale: 10,
-                                  fillColor: "red",
-                                  fillOpacity: 1,
-                                  strokeColor: "red",
-                                  strokeWeight: 1,
-                              }
-                            : {
-                                  path: window.google.maps.SymbolPath.CIRCLE,
-                                  scale: 10,
-                                  fillColor: "green",
-                                  fillOpacity: 1,
-                                  strokeColor: "green",
-                                  strokeWeight: 1,
-                              }
-                    }
-                    key={parkingSpot.id}
-                    position={{
-                        lat: parkingSpot.latitude,
-                        lng: parkingSpot.longitude,
+            {map && (
+                <MarkerClusterer
+                    options={{
+                        imagePath:
+                            "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
                     }}
-                />
-            ))}
+                >
+                    {(clusterer) =>
+                        parkingSpots.map((parkingSpot) => (
+                            <Marker
+                                clusterer={clusterer}
+                                icon={
+                                    parkingSpot.occupied
+                                        ? {
+                                              path: window.google.maps.SymbolPath.CIRCLE,
+                                              scale: 10,
+                                              fillColor: "red",
+                                              fillOpacity: 1,
+                                              strokeColor: "red",
+                                              strokeWeight: 1,
+                                          }
+                                        : {
+                                              path: window.google.maps.SymbolPath.CIRCLE,
+                                              scale: 10,
+                                              fillColor: "green",
+                                              fillOpacity: 1,
+                                              strokeColor: "green",
+                                              strokeWeight: 1,
+                                          }
+                                }
+                                key={parkingSpot.id}
+                                position={{
+                                    lat: parkingSpot.latitude,
+                                    lng: parkingSpot.longitude,
+                                }}
+                            />
+                        )) as unknown as JSX.Element
+                    }
+                </MarkerClusterer>
+            )}
         </GoogleMap>
     ) : (
         <></>

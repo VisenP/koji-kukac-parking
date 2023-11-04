@@ -177,6 +177,9 @@ importers:
       '@react-oauth/google':
         specifier: ^0.7.0
         version: 0.7.0(react-dom@18.2.0)(react@18.2.0)
+      '@types/google.maps':
+        specifier: ^3.54.6
+        version: 3.54.6
       axios:
         specifier: ^1.2.6
         version: 1.2.6
@@ -1915,6 +1918,10 @@ packages:
 
   /@types/google.maps@3.53.5:
     resolution: {integrity: sha512-HoRq4Te8J6krH7hj+TfdYepqegoKZCj3kkaK5gf+ySFSHLvyqYkDvkrtbcVJXQ6QBphQ0h1TF7p4J6sOh4r/zg==}
+    dev: false
+
+  /@types/google.maps@3.54.6:
+    resolution: {integrity: sha512-cTGbsddDgEwZ/6xPywI7HKbeYJkfXFg92HdYnlE0HO3gT/030CVdUHLO2uQOkEo0YMp6TRPqTlAnRGNbQJu8vw==}
     dev: false
 
   /@types/graceful-fs@4.1.6:
