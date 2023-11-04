@@ -17,12 +17,9 @@ import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
 import expressPackageJson from "express/package.json";
-<<<<<<< HEAD
 import AuthHandler from "./routes/auth/AuthHandler";
 import ParkingHandler from "./routes/parking/ParkingHandler";
-=======
 import { wrapper } from "./listener/eventHubListener";
->>>>>>> e285cfb (Recive events)
 
 declare global {
     interface BigInt {
