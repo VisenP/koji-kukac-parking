@@ -9,6 +9,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@googlemaps/markerclusterer": "^2.5.0",
         "@hookform/resolvers": "^2.9.11",
         "@parking/models": "workspace:^1.0.0",
         "@parking/utils": "workspace:^1.0.0",

@@ -1,6 +1,8 @@
 import { EventHubConsumerClient, latestEventPosition } from "@azure/event-hubs";
 
 import { parkingAxios } from "../../api/evaluatorAxios";
+import { Database } from "../database/Database";
+import { Logger } from "../lib/logger";
 import { io } from "./listener";
 
 type ParkingSpot = {
@@ -32,11 +34,39 @@ export const wrapper = async () => {
 
     const parkingSpotsResponse = await parkingAxios.get<{
         data: ParkingSpot[];
-    }>("https://hackathon.kojikukac.com/api/ParkingSpot/getAll", (data) => {
-        return data.data.data;
-    });
+    }>("https://hackathon.kojikukac.com/api/ParkingSpot/getAll", {});
 
+    // ts-ignore
     const parkingSpots: ParkingSpot[] = parkingSpotsResponse.data;
+
+    Logger.info(parkingSpots.length);
+
+    for (const spot of parkingSpots) {
+        const databaseSpot = await Database.selectOneFrom("parking_spots", ["id"], {
+            id: spot.id,
+        });
+
+        await (databaseSpot
+            ? Database.update(
+                  "parking_spots",
+                  {
+                      longitude: spot.longitude,
+                      latitude: spot.latitude,
+                      occupied: spot.occupied,
+                      zone: spot.parkingSpotZone,
+                  },
+                  {
+                      id: spot.id,
+                  }
+              )
+            : Database.insertInto("parking_spots", {
+                  id: spot.id,
+                  longitude: spot.longitude,
+                  latitude: spot.latitude,
+                  occupied: spot.occupied,
+                  zone: spot.parkingSpotZone,
+              }));
+    }
 
     const subscription = consumerClient.subscribe(
         {
@@ -54,11 +84,18 @@ export const wrapper = async () => {
                     const id = event.body["Id"];
                     const occupied = event.body["Occupied"];
 
-                    /*
-                    if ((await Database.selectFrom("parking_spots", [], { id: id })).length === 0) {
-                        Database.insertInto ('parking_spots', {id: id, })
-                    }
-*/
+                    await Database.update(
+                        "parking_spots",
+                        {
+                            occupied: occupied,
+                        },
+                        {
+                            id: id,
+                        }
+                    );
+
+                    Logger.debug("Done!");
+
                     io.emit("ps", event.body);
                 }
 
