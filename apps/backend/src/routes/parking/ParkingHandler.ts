@@ -44,6 +44,31 @@ ParkingHandler.post("/", useValidation(ParkingSchema), async (req, res) => {
     return respond(res, StatusCodes.OK, parkingSpot);
 });
 
+ParkingHandler.patch("/:id", useValidation(ParkingSchema), async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!hasAdminPermission(user.permissions, AdminPermissions.EDIT_PARKING_SPOT))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const parkingSpot = await Database.selectOneFrom("parking_spots", "*", {
+        id: req.params.id,
+    });
+
+    if (!parkingSpot) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    await Database.update(
+        "parking_spots",
+        {
+            ...req.body,
+        },
+        {
+            id: parkingSpot.id,
+        }
+    );
+
+    return respond(res, StatusCodes.OK, parkingSpot);
+});
+
 ParkingHandler.delete("/:id", async (req, res) => {
     const user = await extractUser(req);
 

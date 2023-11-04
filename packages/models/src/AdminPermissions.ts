@@ -3,6 +3,7 @@ import { hasPermission, PermissionData } from "permissio";
 export enum AdminPermissions {
     ADMIN,
     ADD_PARKING_SPOT,
+    EDIT_PARKING_SPOT,
     REMOVE_PARKING_SPOT,
 }
 export type AdminPermissionKeys = keyof typeof AdminPermissions;
