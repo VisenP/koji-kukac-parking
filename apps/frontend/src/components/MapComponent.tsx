@@ -26,13 +26,6 @@ export const MyMap: FC<Parameters> = ({ data }) => {
 
     const [map, setMap] = useState(null);
 
-    //  const { data: spots, error } = useAllParkingSpots();
-
-    // useInterval(() => {}, 5000);
-
-    // console.log(spots);
-    console.log("Data: " + data.length);
-
     const onLoad = useCallback((map) => {
         setMap(map);
     }, []);
