@@ -1,7 +1,10 @@
+import { AdminPermissions, hasAdminPermission } from "@parking/models";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { MyMap } from "../components/MapComponent";
 import { useAllParkingSpots } from "../hooks/parking/useAllParkingSpots";
+import { useAuthStore } from "../state/auth";
 import { useTokenStore } from "../state/token";
 
 const apiURL = "https://hackathon.kojikukac.com/";
@@ -11,6 +14,10 @@ export const MapPage = () => {
     const { data: spots, error } = useAllParkingSpots({
         refetchInterval: 1000,
     });
+
+    const navigate = useNavigate();
+
+    const { user } = useAuthStore();
 
     const { setToken } = useTokenStore();
 
@@ -53,6 +60,9 @@ export const MapPage = () => {
                         })}
                         <button
                             onClick={() => setActiveOnly(!activeOnly)}
+                            tw={
+                                "inline px-[10px] py-[5px] bg-gray-500 text-white border-0 rounded-md cursor-pointer hover:bg-gray-600 hover:transition-all ease-linear"
+                            }
                             style={{
                                 backgroundColor: activeOnly ? "green" : "",
                             }}
@@ -60,12 +70,26 @@ export const MapPage = () => {
                             Show Active
                         </button>
                     </div>
-                    <button
-                        tw={"self-end text-white bg-red-600 border-0 rounded p-1"}
-                        onClick={() => setToken("")}
-                    >
-                        Logout
-                    </button>
+                    <div tw={"flex flex-row gap-2"}>
+                        {hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && (
+                            <button
+                                tw={
+                                    "inline px-[10px] py-[5px] bg-amber-500 text-white border-0 rounded-md cursor-pointer hover:bg-red-700 hover:transition-all ease-linear"
+                                }
+                                onClick={() => navigate("admin")}
+                            >
+                                Admin
+                            </button>
+                        )}
+                        <button
+                            tw={
+                                "inline px-[10px] py-[5px] bg-red-500 text-white border-0 rounded-md cursor-pointer hover:bg-red-700 hover:transition-all ease-linear"
+                            }
+                            onClick={() => setToken("")}
+                        >
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
             <div>{filteredSpots && <MyMap data={filteredSpots} />}</div>

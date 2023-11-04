@@ -1,6 +1,6 @@
 import { ParkingSpot } from "@parking/models";
 import { GoogleMap, Marker, MarkerClusterer, useJsApiLoader } from "@react-google-maps/api";
-import { FC, useCallback, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 
 import { ParkingInfo } from "./ParkingInfo";
 
@@ -18,9 +18,11 @@ const center = {
 
 type Parameters = {
     data: ParkingSpot[];
+    special?: ParkingSpot;
+    onSelectLatLng?: (lat: number, lng: number) => void;
 };
 
-export const MyMap: FC<Parameters> = ({ data }) => {
+export const MyMap: FC<Parameters> = ({ data, special, onSelectLatLng }) => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: googleMapsApiKey,
@@ -31,6 +33,11 @@ export const MyMap: FC<Parameters> = ({ data }) => {
     const [map, setMap] = useState(null);
 
     const onLoad = useCallback((map) => {
+        map.addListener("click", (mapsMouseEvent) => {
+            if (onSelectLatLng)
+                onSelectLatLng(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng());
+        });
+
         setMap(map);
     }, []);
 
@@ -56,7 +63,8 @@ export const MyMap: FC<Parameters> = ({ data }) => {
                         }}
                     >
                         {(clusterer) =>
-                            data.map((parkingSpot) => (
+                            // TODO: Fix
+                            (special ? [...data, special] : data).map((parkingSpot) => (
                                 <Marker
                                     clusterer={clusterer}
                                     icon={
