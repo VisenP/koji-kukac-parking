@@ -12,6 +12,7 @@
         "@hookform/resolvers": "^2.9.11",
         "@parking/models": "workspace:^1.0.0",
         "@parking/utils": "workspace:^1.0.0",
+        "@react-google-maps/api": "^2.19.2",
         "@react-oauth/google": "^0.7.0",
         "axios": "^1.2.6",
         "babel-plugin-macros": "^3.1.0",
