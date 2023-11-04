@@ -1,15 +1,11 @@
 import { RouteObject } from "react-router";
 
-import { MyMap } from "../components/MapComponent";
+import { MapPage } from "../pages/MapPage";
 
 export const loginRoutes: RouteObject[] = [
     {
         path: "/",
-        element: (
-            <div>
-                <MyMap /> world!
-            </div>
-        ),
+        element: <MapPage />,
         children: [],
     },
 ];

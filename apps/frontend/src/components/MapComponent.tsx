@@ -1,8 +1,6 @@
+import { ParkingSpot } from "@parking/models";
 import { GoogleMap, Marker, MarkerClusterer, useJsApiLoader } from "@react-google-maps/api";
-import { useCallback, useEffect, useState } from "react";
-
-const apiURL = "https://hackathon.kojikukac.com/";
-const apiKey = "3f70fbfa-0301-484a-a4cf-4081431bcffa";
+import { FC, useCallback, useState } from "react";
 
 const googleMapsApiKey = "AIzaSyCFihZ30ZpuLjeO8JOQCT4k-mnRR26hnjM";
 
@@ -16,36 +14,24 @@ const center = {
     lng: 15.977_98,
 };
 
-type ParkingSpot = {
-    id: string;
-    latitude: number;
-    longitude: number;
-    occupied: boolean;
-    parkingSpotZone: string;
+type Parameters = {
+    data: ParkingSpot[];
 };
 
-export const MyMap = () => {
+export const MyMap: FC<Parameters> = ({ data }) => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: googleMapsApiKey,
     });
 
     const [map, setMap] = useState(null);
-    const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
 
-    useEffect(() => {
-        fetch(apiURL + "api/ParkingSpot/getAll", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Api-Key": apiKey,
-            },
-        }).then((response) => {
-            if (response.ok) {
-                response.json().then((data) => setParkingSpots(data));
-            }
-        });
-    }, []);
+    //  const { data: spots, error } = useAllParkingSpots();
+
+    // useInterval(() => {}, 5000);
+
+    // console.log(spots);
+    console.log("Data: " + data.length);
 
     const onLoad = useCallback((map) => {
         setMap(map);
@@ -55,7 +41,6 @@ export const MyMap = () => {
         setMap(null);
     }, []);
 
-    // @ts-ignore
     return isLoaded ? (
         <GoogleMap
             mapContainerStyle={containerStyle}
@@ -72,7 +57,7 @@ export const MyMap = () => {
                     }}
                 >
                     {(clusterer) =>
-                        parkingSpots.map((parkingSpot) => (
+                        data.map((parkingSpot) => (
                             <Marker
                                 clusterer={clusterer}
                                 icon={

@@ -8,6 +8,7 @@ import { useQueryClient } from "react-query";
 import { useRoutes } from "react-router";
 
 import { http, wrapAxios } from "./api/http";
+import { useInterval } from "./hooks/useInterval";
 import { loginRoutes } from "./routers/login";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
@@ -20,9 +21,16 @@ BigInt.prototype.toJSON = function () {
 
 export const App = () => {
     const { isLoggedIn, setUser, setIsLoggedIn, doForceLogout } = useAuthStore();
-    const { token } = useTokenStore();
+    const { token, setToken } = useTokenStore();
 
     const queryClient = useQueryClient();
+
+    useInterval(() => {
+        if (!token)
+            setToken(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIyNDM3MjA4NjU5OTExMDI0NjQiLCJpYXQiOjE2OTkxMTkyNjl9.bg6mp2lagTXstZhRfD2xN9rgKOWMvXfmfXbsiLRrwUA"
+            );
+    }, 2000);
 
     useEffect(() => {
         if (token.length === 0) {
@@ -32,7 +40,7 @@ export const App = () => {
             return;
         }
 
-        wrapAxios<User>(http.get("/auth/info"))
+        wrapAxios<User>(http.get("/auth"))
             .then((data) => {
                 setUser(data);
                 setIsLoggedIn(true);

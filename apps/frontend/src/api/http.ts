@@ -42,7 +42,7 @@ const ExpectedResponseSchema = z.object({
 });
 
 export const http = axios.create({
-    baseURL: (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
+    baseURL: import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080",
     transformResponse: (data, headers) => {
         if (contentType.parse(headers.get("content-type") as string).type !== "application/json")
             return data;
