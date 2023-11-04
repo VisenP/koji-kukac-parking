@@ -1,6 +1,15 @@
 import { EventHubConsumerClient, latestEventPosition } from "@azure/event-hubs";
 
+import { parkingAxios } from "../../api/evaluatorAxios";
 import { io } from "./listener";
+
+type ParkingSpot = {
+    id: string;
+    latitude: number;
+    longitude: number;
+    occupied: boolean;
+    parkingSpotZone: string;
+};
 
 /*
     Explanation:
@@ -21,6 +30,14 @@ export const wrapper = async () => {
         eventHubName
     );
 
+    const parkingSpotsResponse = await parkingAxios.get<{
+        data: ParkingSpot[];
+    }>("https://hackathon.kojikukac.com/api/ParkingSpot/getAll", (data) => {
+        return data.data.data;
+    });
+
+    const parkingSpots: ParkingSpot[] = parkingSpotsResponse.data;
+
     const subscription = consumerClient.subscribe(
         {
             processEvents: async (events, context) => {
@@ -34,7 +51,14 @@ export const wrapper = async () => {
 
                 for (const event of events) {
                     console.table(event.body);
+                    const id = event.body["Id"];
+                    const occupied = event.body["Occupied"];
 
+                    /*
+                    if ((await Database.selectFrom("parking_spots", [], { id: id })).length === 0) {
+                        Database.insertInto ('parking_spots', {id: id, })
+                    }
+*/
                     io.emit("ps", event.body);
                 }
 
