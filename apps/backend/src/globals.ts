@@ -11,6 +11,7 @@ type GlobalsType = {
     influxToken: string;
     influxOrg: string;
     influxBucket: string;
+    tokenSecret: string;
 };
 
 export const Globals: GlobalsType = {
@@ -26,4 +27,5 @@ export const Globals: GlobalsType = {
     influxToken: process.env.INFLUXDB_TOKEN ?? "devtoken",
     influxOrg: process.env.INFLUXDB_ORG ?? "parking-org",
     influxBucket: process.env.INFLUXDB_BUCKET ?? "parking",
+    tokenSecret: "Change Me",
 };

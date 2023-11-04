@@ -14,7 +14,7 @@ export const respond = (
     status: StatusCodes,
     data?: Record<string, unknown> | unknown[]
 ) => {
-    insertInfluxActivity(status);
+    //  insertInfluxActivity(status);
 
     response.status(status).json({
         status,

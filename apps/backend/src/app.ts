@@ -13,12 +13,11 @@ import { Logger } from "./lib/logger";
 import { reject, respond } from "./utils/response";
 import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
-import { initInflux } from "./influx/Influx";
 import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
-import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import expressPackageJson from "express/package.json";
+import AuthHandler from "./routes/auth/AuthHandler";
 
 declare global {
     interface BigInt {
@@ -76,6 +75,8 @@ app.use(json(), (req, _, next) => {
     next();
 });
 
+app.use("/auth", AuthHandler);
+
 app.get("/", (req, res) => respond(res, StatusCodes.OK));
 
 app.use(() => {
@@ -112,13 +113,13 @@ Promise.allSettled([
             Logger.panic("Redis failed", error);
         }),
     // for consistency
-    initInflux(),
+    // initInflux(),
 ]).then(async () => {
     Logger.info("Ready");
 
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
-        for (const task of [startInfluxFlushTask]) task();
+        // for (const task of [startInfluxFlushTask]) task();
     });
 });

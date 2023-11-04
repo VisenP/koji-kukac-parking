@@ -4,6 +4,7 @@ import { Migration, ScylloClient } from "scyllo";
 import { Globals } from "../globals";
 import { Logger } from "../lib/logger";
 import { migration_initial } from "./migrations/0001_initial";
+import { migration_add_user_index } from "./migrations/0002_add_user_index";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -19,7 +20,7 @@ export const Database = new ScylloClient<{
     log: Logger.database,
 });
 
-const migrations: Migration<any>[] = [migration_initial];
+const migrations: Migration<any>[] = [migration_initial, migration_add_user_index];
 
 export const initDatabase = async () => {
     await Database.useKeyspace(Globals.dbKeyspace, true);

@@ -44,18 +44,18 @@ importers:
       '@influxdata/influxdb-client-apis':
         specifier: ^1.33.2
         version: 1.33.2(@influxdata/influxdb-client@1.33.2)
-      '@parking/models':
-        specifier: workspace:^1.0.0
-        version: link:../../packages/models
-      '@parking/utils':
-        specifier: workspace:^1.0.0
-        version: link:../../packages/utils
       '@kubernetes/client-node':
         specifier: ^0.18.1
         version: 0.18.1
       '@lvksh/logger':
         specifier: ^1.6.4
         version: 1.6.4
+      '@parking/models':
+        specifier: workspace:^1.0.0
+        version: link:../../packages/models
+      '@parking/utils':
+        specifier: workspace:^1.0.0
+        version: link:../../packages/utils
       '@sinclair/typebox':
         specifier: ^0.26.8
         version: 0.26.8
