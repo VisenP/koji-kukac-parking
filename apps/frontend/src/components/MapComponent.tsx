@@ -8,7 +8,7 @@ const googleMapsApiKey = "AIzaSyCFihZ30ZpuLjeO8JOQCT4k-mnRR26hnjM";
 
 const containerStyle = {
     width: "100vw",
-    height: "100vh",
+    height: "95vh",
 };
 
 const center = {

@@ -8,8 +8,8 @@ import { useQueryClient } from "react-query";
 import { useRoutes } from "react-router";
 
 import { http, wrapAxios } from "./api/http";
-import { useInterval } from "./hooks/useInterval";
 import { loginRoutes } from "./routers/login";
+import { siteRoutes } from "./routers/site";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
 
@@ -24,13 +24,6 @@ export const App = () => {
     const { token, setToken } = useTokenStore();
 
     const queryClient = useQueryClient();
-
-    useInterval(() => {
-        if (!token)
-            setToken(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIyNDM3MjA4NjU5OTExMDI0NjQiLCJpYXQiOjE2OTkxMTkyNjl9.bg6mp2lagTXstZhRfD2xN9rgKOWMvXfmfXbsiLRrwUA"
-            );
-    }, 2000);
 
     useEffect(() => {
         if (token.length === 0) {
@@ -48,7 +41,7 @@ export const App = () => {
             .catch(() => doForceLogout());
     }, [token]);
 
-    if (token.length > 0 && !isLoggedIn) return useRoutes(loginRoutes);
+    if (!token || token.length === 0 || !isLoggedIn) return useRoutes(loginRoutes);
 
-    return useRoutes(loginRoutes);
+    return useRoutes(siteRoutes);
 };

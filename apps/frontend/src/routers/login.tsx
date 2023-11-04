@@ -1,11 +1,11 @@
 import { RouteObject } from "react-router";
 
-import { MapPage } from "../pages/MapPage";
+import { LoginPage } from "../pages/auth/LoginPage";
 
 export const loginRoutes: RouteObject[] = [
     {
         path: "/",
-        element: <MapPage />,
+        element: <LoginPage />,
         children: [],
     },
 ];
