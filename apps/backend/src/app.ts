@@ -18,6 +18,7 @@ import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
 import expressPackageJson from "express/package.json";
 import AuthHandler from "./routes/auth/AuthHandler";
+import ParkingHandler from "./routes/parking/ParkingHandler";
 
 declare global {
     interface BigInt {
@@ -76,6 +77,7 @@ app.use(json(), (req, _, next) => {
 });
 
 app.use("/auth", AuthHandler);
+app.use("/parking", ParkingHandler);
 
 app.get("/", (req, res) => respond(res, StatusCodes.OK));
 

@@ -46,6 +46,6 @@ export const extractUser = async (req: Request): Promise<User> => {
 
         if (user === null) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-        throw new SafeError(StatusCodes.BAD_REQUEST);
+        return user;
     });
 };

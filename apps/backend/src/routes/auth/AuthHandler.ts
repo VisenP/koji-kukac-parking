@@ -7,7 +7,9 @@ import { sign } from "jsonwebtoken";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { extractUser } from "../../extractors/extractUser";
 import { Globals } from "../../globals";
+import { Logger } from "../../lib/logger";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { reject, respond } from "../../utils/response";
@@ -23,6 +25,13 @@ const RegisterSchema = Type.Object({
     email: Type.String(),
     username: Type.String(),
     password: Type.String(),
+});
+
+AuthHandler.get("/", async (req, res) => {
+    Logger.info("Here!");
+    const user = await extractUser(req);
+
+    return respond(res, StatusCodes.OK, user);
 });
 
 AuthHandler.post("/login", useValidation(LoginSchema), async (req, res) => {
