@@ -114,10 +114,10 @@ export const MapPage = () => {
     }, []);
 
     return (
-        <div tw={"flex flex-col"}>
+        <div tw={"flex md:flex-col"}>
             <div tw={"h-[6vh] p-2 shadow-2xl"}>
-                <div tw={"flex w-full flex-row gap-2 justify-between items-center"}>
-                    <div tw={"flex flex-row gap-2"}>
+                <div tw={"flex w-full flex-col md:flex-row gap-2 justify-between items-center"}>
+                    <div tw={"flex flex-col md:flex-row gap-2"}>
                         {zones.map((zone) => {
                             return (
                                 <button

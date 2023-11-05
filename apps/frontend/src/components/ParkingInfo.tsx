@@ -114,7 +114,7 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
             : selectedParkingSpot.start_price_euros;
 
     return (
-        <div tw={"h-full w-[25%] p-4"}>
+        <div tw={"md:h-full md:w-[25%] p-4"}>
             <span tw={"text-xl"}>Parking info</span>
             {selectedParkingSpot ? (
                 <>

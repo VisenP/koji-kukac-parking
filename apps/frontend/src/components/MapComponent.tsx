@@ -100,7 +100,7 @@ export const MyMap: FC<Parameters> = ({
     }, []);
 
     return isLoaded ? (
-        <div tw={"flex h-full"}>
+        <div tw={"flex flex-col md:flex-row h-full"}>
             {selectedSpot && (
                 <ParkingInfo
                     onDelete={() => {
@@ -121,17 +121,6 @@ export const MyMap: FC<Parameters> = ({
                 {
                     //<Marker position={{ lat: currentLatitude, lng: currentLongitude }} />
                 }
-                <Marker
-                    position={{ lat: closestSpotLatitude ?? 0, lng: closestSpotLongitude ?? 0 }}
-                    icon={{
-                        path: window.google.maps.SymbolPath.CIRCLE,
-                        fillColor: "yellow",
-                        fillOpacity: 1,
-                        strokeWeight: 2,
-                        strokeColor: "white",
-                        scale: 7,
-                    }}
-                />
                 <Marker
                     position={{ lat: markedLatitude, lng: markedLongitude }}
                     icon={{
@@ -205,6 +194,9 @@ export const MyMap: FC<Parameters> = ({
                         }
                     </MarkerClusterer>
                 )}
+                <Marker
+                    position={{ lat: closestSpotLatitude ?? 0, lng: closestSpotLongitude ?? 0 }}
+                />
                 {directionsShow ? (
                     <DirectionsService
                         options={{
