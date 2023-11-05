@@ -53,7 +53,7 @@ export const LoginPage: FC = () => {
 
     return (
         <div tw="flex justify-center items-center h-full mt-10">
-            <div tw={"bg-white border-2 border-solid border-neutral-200 rounded-lg p-5 shadow-lg"}>
+            <div tw={"bg-white border-2 border-solid border-neutral-200 rounded-lg p-5 shadow-2xl"}>
                 <h2 tw={"mb-4"}>{register ? "Register" : "Login"}</h2>
                 <form>
                     <div tw={"mb-4 flex flex-col gap-2"}>

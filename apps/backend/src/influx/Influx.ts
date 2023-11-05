@@ -4,32 +4,18 @@ import { createInfluxClient, InfluxUInteger } from "./InfluxClient";
 // schema here could be improved, but it would require some changes to the client
 //  and we kind of don't have time for that, it is good enough for now
 export const Influx = createInfluxClient<{
-    elo: {
+    profit: {
         values: {
-            score: InfluxUInteger;
+            amount: InfluxUInteger;
         };
-        tags: ["userId", "orgId"];
+        tags: ["spotId"];
     };
-    submissions: {
+    occupied: {
         values: {
             // no real meaning, but this has to exist
-            id: InfluxUInteger;
+            wasOccupied: boolean;
         };
-        tags: ["userId", "orgId", "successful"];
-    };
-    logins: {
-        values: {
-            // no real meaning, but this has to exist
-            happened: true;
-        };
-        tags: ["userId", "newLogin"];
-    };
-    activity: {
-        values: {
-            // no real meaning, but this has to exist
-            happened: true;
-        };
-        tags: ["statusCode"];
+        tags: ["spotId"];
     };
 }>({
     url: Globals.influxUrl,

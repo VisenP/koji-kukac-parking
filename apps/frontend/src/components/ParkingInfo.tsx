@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 
 import { http } from "../api/http";
 import { useBuyParkingSpot } from "../hooks/parking/useBuyParkingSpot";
+import { useParkingSpotAnalytics } from "../hooks/parking/useParkingSpot";
 import { useAuthStore } from "../state/auth";
 
 const googleMapsApiKey = "AIzaSyCFihZ30ZpuLjeO8JOQCT4k-mnRR26hnjM";
@@ -13,10 +14,8 @@ type ParkingInfoProperties = {
     onDirections?: () => void;
 };
 
-const getGeolocation = async (lat: number, lng: number) => {
+export const getGeolocation = async (lat: number, lng: number) => {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googleMapsApiKey}`;
-
-    console.log(url);
 
     return await fetch(url)
         .then((response) => {
@@ -28,11 +27,7 @@ const getGeolocation = async (lat: number, lng: number) => {
         })
         .then((data) => {
             if (data.status === "OK") {
-                const result = data.results[0].formatted_address;
-
-                console.log(result);
-
-                return result;
+                return data.results[0].formatted_address;
             } else {
                 console.log("Geocoding request failed");
             }
@@ -53,7 +48,27 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
     const [endM, setEndM] = useState(0);
     const [geoLocation, setGeoLocation] = useState(0);
 
+    const [timeString, setTimeString] = useState("00:00");
+
+    const [validTime, setValidTime] = useState(false);
+
+    const currentHours = new Date().getMinutes() % 30;
+
+    const currentMinutes = new Date().getSeconds();
+
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
     const { user } = useAuthStore();
+
+    const { data: analytics } = useParkingSpotAnalytics(selectedParkingSpot.id, {
+        enabled: hasAdminPermission(user.permissions, AdminPermissions.ADMIN),
+    });
+
+    // console.log(analytics);
+
+    const timeLeft = Math.round(
+        20 - (Date.now() - Number(selectedParkingSpot.last_bid_time)) / 1000
+    );
 
     useEffect(() => {
         getGeolocation(selectedParkingSpot.latitude, selectedParkingSpot.longitude).then((l) =>
@@ -62,8 +77,6 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
     }, [selectedParkingSpot]);
 
     const deleteParking = async (id: string) => {
-        console.log("Deleting:", id);
-
         onDelete && onDelete();
 
         const response: {
@@ -71,19 +84,34 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
         } = await http.delete("/parking/" + id).catch((error) => error);
     };
 
+    useEffect(() => {
+        const split = timeString.split(":");
+
+        setEndH(Number(split[0]));
+        setEndM(Number(split[1]));
+        setValidTime(Number(split[0]) * 60 + Number(split[1]) >= currentTotalMinutes + 60);
+    }, [timeString]);
+
     const showDirections = (id: string) => {
         onDirections && onDirections();
-
-        console.log("Show directions:", id);
     };
 
     const onBid = async () => {
-        const error = await http
-            .post("/parking/" + selectedParkingSpot.id + "/bid")
-            .catch((error) => error);
+        if (!validTime) return;
 
-        console.log(error);
+        const error = await http
+            .post("/parking/" + selectedParkingSpot.id + "/bid", {
+                endH: endH,
+                endM: endM,
+            })
+            .catch((error) => error);
     };
+
+    const bidAmount =
+        selectedParkingSpot.last_bid_time &&
+        Date.now() - Number(selectedParkingSpot.last_bid_time) < 20_000
+            ? selectedParkingSpot.current_bid + selectedParkingSpot.bid_increment
+            : selectedParkingSpot.start_price_euros;
 
     return (
         <div tw={"h-full w-[25%] p-4"}>
@@ -91,7 +119,7 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
             {selectedParkingSpot ? (
                 <>
                     <p>
-                        <b>ID: </b> {selectedParkingSpot.id}
+                        <b>ID: </b> {selectedParkingSpot.id.slice(0, 6)}
                     </p>
                     <p>
                         <b>Location:</b> {geoLocation}
@@ -102,10 +130,19 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
                     <p>
                         {!selectedParkingSpot.occupied ? (
                             <span style={{ color: "limegreen" }}>Available</span>
+                        ) : selectedParkingSpot.occupied_by === user.username ? (
+                            <span style={{ color: "limegreen" }}>Reserved by you</span>
                         ) : (
                             <span style={{ color: "red" }}>Not available</span>
                         )}
                     </p>
+                    {analytics && (
+                        <div tw={"font-bold m-2 bg-red-200 rounded-xl p-2"}>
+                            <div>Daily profit: {analytics.profit1d + ""}$</div>
+                            <div>Weekly profit: {analytics.profit7d + ""}$</div>
+                            <div>Monthly profit: {analytics.profit30d + ""}$</div>
+                        </div>
+                    )}
                 </>
             ) : (
                 <p>Select a parking spot to view details</p>
@@ -115,69 +152,56 @@ export const ParkingInfo: React.FC<ParkingInfoProperties> = ({
                 <div tw={"flex flex-col gap-2 bg-slate-100 rounded-xl p-2"}>
                     <span tw={"text-xl"}>Register your spot!</span>
                     <div tw={"flex flex-row gap-2"}>
-                        <div>End hour: </div>
+                        <div>End time: </div>
                         <input
-                            value={endH}
-                            type={"number"}
-                            onChange={(event) => setEndH(Number(event.target.value))}
+                            value={timeString}
+                            type={"time"}
+                            onChange={(event) => setTimeString(event.target.value)}
                         ></input>
                     </div>
-                    <div tw={"flex flex-row gap-2"}>
-                        <span>End min:</span>
-                        <input
-                            value={endM}
-                            type={"number"}
-                            onChange={(event) => setEndM(Number(event.target.value))}
-                        ></input>
+                    {!validTime && <span tw={"text-red-500"}>Minimum duration: 1h</span>}
+
+                    <div tw={"flex flex-col gap-2 font-bold"}>
+                        <span>
+                            Buy now price: {selectedParkingSpot.current_buy_now_price_euros}$
+                        </span>
+                        <span>Last bidder: {selectedParkingSpot.last_bid_username}</span>
+                        <span>
+                            Last bid:{" "}
+                            {selectedParkingSpot.last_bid_username.length > 0
+                                ? selectedParkingSpot.current_bid + "$"
+                                : "None"}
+                        </span>
+                        {selectedParkingSpot.last_bid_time &&
+                            Date.now() - Number(selectedParkingSpot.last_bid_time) < 20_000 && (
+                                <span tw={"flex flex-row gap-3 items-center"}>
+                                    Bidding ends in: {timeLeft}s
+                                    <div tw={"w-7 h-7"}>
+                                        <div
+                                            tw={"w-7 h-7 rounded-full"}
+                                            style={{
+                                                background: `conic-gradient(#3498db ${
+                                                    timeLeft / 0.2
+                                                }%, #ecf0f1 ${timeLeft / 0.2}% 100%)`,
+                                            }}
+                                        />
+                                    </div>
+                                </span>
+                            )}
+                        <span>Bid: {bidAmount}$</span>
                     </div>
 
-                    <div>
-                        <div tw={"flex flex-col gap-2 font-bold"}>
-                            <span>
-                                Buy now price: {selectedParkingSpot.current_buy_now_price_euros}$
-                            </span>
-                            <span>Last bidder: {selectedParkingSpot.last_bid_username}</span>
-                            <span>
-                                Last bid:{" "}
-                                {selectedParkingSpot.last_bid_username.length > 0
-                                    ? selectedParkingSpot.current_bid + "$"
-                                    : "None"}
-                            </span>
-                            {selectedParkingSpot.last_bid_time &&
-                                Date.now() - Number(selectedParkingSpot.last_bid_time) < 20_000 && (
-                                    <span>
-                                        Bidding ends in:{" "}
-                                        {Math.round(
-                                            20 -
-                                                (Date.now() -
-                                                    Number(selectedParkingSpot.last_bid_time)) /
-                                                    1000
-                                        )}
-                                        s
-                                    </span>
-                                )}
-                            <span>
-                                Bid:{" "}
-                                {(selectedParkingSpot.last_bid_username.length > 0
-                                    ? selectedParkingSpot.current_bid
-                                    : selectedParkingSpot.start_price_euros) +
-                                    selectedParkingSpot.bid_increment}
-                                $
-                            </span>
-                        </div>
-                    </div>
-
-                    <button onClick={onBid}>Bid</button>
+                    <button onClick={onBid}>Bid {bidAmount}$</button>
                     <button
                         onClick={() =>
-                            // TODO: Validation
+                            validTime &&
                             mutate({
                                 endH,
                                 endM,
                             })
                         }
                     >
-                        Buy Now
+                        Buy Now {selectedParkingSpot.current_buy_now_price_euros}$
                     </button>
                 </div>
             )}

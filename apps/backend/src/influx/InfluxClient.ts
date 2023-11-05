@@ -118,7 +118,7 @@ export type InfluxAggregateNumberResult<K extends string> = ({
     [key in StringLiteral<K>]: number;
 })[];
 
-export type AllowedCountWindows = "1h" | "1d" | "1mo";
+export type AllowedCountWindows = "1h" | "1d" | "1mo" | "30min";
 
 export type InfluxClient<T extends InfluxDataSchema> = {
     createLine<K extends keyof T & string>(

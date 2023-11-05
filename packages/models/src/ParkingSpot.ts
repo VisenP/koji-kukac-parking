@@ -25,3 +25,9 @@ export type ParkingSpotV3 = ParkingSpotV2 & {
 };
 
 export type ParkingSpot = ParkingSpotV3;
+
+export type ParkingSpotWithProfit = ParkingSpot & {
+    profit1d: number;
+    profit7d: number;
+    profit30d: number;
+};

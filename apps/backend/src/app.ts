@@ -20,6 +20,8 @@ import { wrapper } from "./listener/eventHubListener";
 import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
+import { Influx, initInflux } from "./influx/Influx";
+import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 
 declare global {
     interface BigInt {
@@ -116,15 +118,34 @@ Promise.allSettled([
             Logger.panic("Redis failed", error);
         }),
     // for consistency
-    // initInflux(),
+    initInflux(),
 ]).then(async () => {
     Logger.info("Ready");
+
+    setInterval(async () => {
+        Logger.info("Testing influx: ");
+
+        const result = await Influx.query(
+            "profit",
+            {},
+            {
+                start: new Date(Date.now() - 1000 * 60 * 30),
+                end: new Date(),
+            }
+        );
+
+        let totalAmount = 0n;
+
+        for (const r of result) totalAmount += r.amount.asBigInt;
+
+        Logger.info(totalAmount + "");
+    }, 10_000);
 
     wrapper();
 
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
-        // for (const task of [startInfluxFlushTask]) task();
+        for (const task of [startInfluxFlushTask]) task();
     });
 });

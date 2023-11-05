@@ -7,17 +7,95 @@ import { parkingAxios } from "../../../api/evaluatorAxios";
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
+import { Influx } from "../../influx/Influx";
+import { createInfluxUInt } from "../../influx/InfluxClient";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
 
 const ParkingHandler = Router();
 
+const getProfit = async (id: string, durationMinutes: number) => {
+    const result = await Influx.query(
+        "profit",
+        {
+            spotId: id,
+        },
+        {
+            start: new Date(Date.now() - 1000 * 60 * durationMinutes),
+            end: new Date(),
+        }
+    );
+
+    let totalAmount = 0n;
+
+    for (const r of result) totalAmount += r.amount.asBigInt;
+
+    return totalAmount;
+};
+
+const getTotalProfit = async (durationMinutes: number) => {
+    const result = await Influx.query(
+        "profit",
+        {},
+        {
+            start: new Date(Date.now() - 1000 * 60 * durationMinutes),
+            end: new Date(),
+        }
+    );
+
+    let totalAmount = 0n;
+
+    for (const r of result) totalAmount += r.amount.asBigInt;
+
+    return totalAmount;
+};
+
+ParkingHandler.get("/analytics", async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const profit1d = await getTotalProfit(30);
+    const profit7d = await getTotalProfit(30 * 7);
+    const profit30d = await getTotalProfit(30 * 30);
+
+    return respond(res, StatusCodes.OK, {
+        profit1d,
+        profit7d,
+        profit30d,
+    });
+});
+
+ParkingHandler.get("/:id/analytics", async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const parkingSpot = await Database.selectOneFrom("parking_spots", ["id"], {
+        id: req.params.id,
+    });
+
+    if (!parkingSpot) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    const profit1d = await getProfit(parkingSpot.id, 30);
+    const profit7d = await getProfit(parkingSpot.id, 30 * 7);
+    const profit30d = await getProfit(parkingSpot.id, 30 * 30);
+
+    return respond(res, StatusCodes.OK, {
+        profit1d,
+        profit7d,
+        profit30d,
+    });
+});
+
 ParkingHandler.get("/", async (req, res) => {
     await extractUser(req);
 
-    const parking_spots = await Database.selectFrom("parking_spots", "*");
+    const parkingSpots = await Database.selectFrom("parking_spots", "*");
 
-    return respond(res, StatusCodes.OK, parking_spots);
+    return respond(res, StatusCodes.OK, parkingSpots);
 });
 
 const ParkingSchema = Type.Object({
@@ -84,7 +162,12 @@ ParkingHandler.get("/:id", async (req, res) => {
     return respond(res, StatusCodes.OK, parkingSpot);
 });
 
-ParkingHandler.post("/:id/bid", async (req, res) => {
+const ReserveSchema = Type.Object({
+    endH: Type.Number(),
+    endM: Type.Number(),
+});
+
+ParkingHandler.post("/:id/bid", useValidation(ReserveSchema), async (req, res) => {
     const user = await extractUser(req);
 
     const parkingSpot = await Database.selectOneFrom("parking_spots", "*", {
@@ -126,12 +209,54 @@ ParkingHandler.post("/:id/bid", async (req, res) => {
         )
             return;
 
+        const [_, error] = await parkingAxios
+            .post<any>("https://hackathon.kojikukac.com/api/ParkingSpot/reserve", {
+                endH: req.body.endH,
+                endM: req.body.endM,
+                parkingSpotId: parkingSpot.id,
+            })
+            .then((res) => [res, undefined])
+            .catch((error) => [undefined, error]);
+
+        console.log(error);
+
+        if (error) {
+            await Database.update(
+                "parking_spots",
+                {
+                    occupied: false,
+                    last_bid_time: BigInt(0),
+                    last_bid_username: "None",
+                    current_bid: 0,
+                    current_buy_now_price_euros: parkingSpot.start_price_euros * 2,
+                },
+                {
+                    id: parkingSpot.id,
+                }
+            );
+
+            return;
+        }
+
+        await Influx.insert(
+            "profit",
+            {
+                spotId: parkingSpot.id,
+            },
+            {
+                amount: createInfluxUInt(Math.round(nextBid)),
+            },
+            new Date()
+        );
+
         await Database.update(
             "parking_spots",
             {
                 occupied: true,
                 occupied_by: user.username,
                 last_bid_time: BigInt(0),
+                current_bid: 0,
+                current_buy_now_price_euros: parkingSpot.start_price_euros * 2,
             },
             {
                 id: parkingSpot.id,
@@ -140,11 +265,6 @@ ParkingHandler.post("/:id/bid", async (req, res) => {
     }, 20_000);
 
     return respond(res, StatusCodes.OK, parkingSpot);
-});
-
-const ReserveSchema = Type.Object({
-    endH: Type.Number(),
-    endM: Type.Number(),
 });
 
 ParkingHandler.post("/:id/buy_now", useValidation(ReserveSchema), async (req, res) => {
@@ -170,6 +290,31 @@ ParkingHandler.post("/:id/buy_now", useValidation(ReserveSchema), async (req, re
     console.log(error);
 
     if (error) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    await Influx.insert(
+        "profit",
+        {
+            spotId: parkingSpot.id,
+        },
+        {
+            amount: createInfluxUInt(Math.round(parkingSpot.current_buy_now_price_euros)),
+        },
+        new Date()
+    );
+
+    await Database.update(
+        "parking_spots",
+        {
+            occupied: true,
+            occupied_by: user.username,
+            last_bid_time: BigInt(0),
+            current_bid: 0,
+            current_buy_now_price_euros: parkingSpot.start_price_euros * 2,
+        },
+        {
+            id: parkingSpot.id,
+        }
+    );
 
     return respond(res, StatusCodes.OK, parkingSpot);
 });

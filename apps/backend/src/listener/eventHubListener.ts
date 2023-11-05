@@ -2,6 +2,8 @@ import { EventHubConsumerClient, latestEventPosition } from "@azure/event-hubs";
 
 import { parkingAxios } from "../../api/evaluatorAxios";
 import { Database } from "../database/Database";
+import { Influx } from "../influx/Influx";
+import { createInfluxUInt } from "../influx/InfluxClient";
 import { Logger } from "../lib/logger";
 import { io } from "./listener";
 
@@ -88,15 +90,40 @@ export const wrapper = async () => {
 
                     console.log(occupied);
 
-                    await Database.update(
-                        "parking_spots",
-                        {
-                            occupied: occupied,
-                        },
-                        {
-                            id: id,
-                        }
-                    );
+                    if (occupied) {
+                        await Influx.insert(
+                            "profit",
+                            {
+                                spotId: id,
+                            },
+                            {
+                                amount: createInfluxUInt(Math.round(Math.random() * 5)),
+                            },
+                            new Date()
+                        );
+                    }
+
+                    await (occupied
+                        ? Database.update(
+                              "parking_spots",
+                              {
+                                  occupied: occupied,
+                              },
+                              {
+                                  id: id,
+                              }
+                          )
+                        : Database.update(
+                              "parking_spots",
+                              {
+                                  occupied: occupied,
+                                  occupied_by: "",
+                                  current_bid: 0,
+                              },
+                              {
+                                  id: id,
+                              }
+                          ));
 
                     Logger.debug("Done!");
 
