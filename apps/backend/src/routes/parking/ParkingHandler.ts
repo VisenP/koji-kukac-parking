@@ -25,6 +25,10 @@ const ParkingSchema = Type.Object({
     latitude: Type.Number(),
     longitude: Type.Number(),
     occupied: Type.Boolean(),
+    start_price_euros: Type.Number(),
+    bin_increment: Type.Number(),
+    disabled: Type.Boolean(),
+    electric: Type.Boolean(),
 });
 
 ParkingHandler.post("/", useValidation(ParkingSchema), async (req, res) => {
@@ -45,11 +49,95 @@ ParkingHandler.post("/", useValidation(ParkingSchema), async (req, res) => {
     if (error) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
     const parkingSpot: ParkingSpot = {
-        id: parkingResponse.data.id,
-        ...req.body,
+        id: parkingResponse.data.id as string,
+        zone: req.body.zone,
+        start_price_euros: req.body.start_price_euros,
+        disabled: req.body.disabled,
+        electric: req.body.electric,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        bid_increment: req.body.bin_increment,
+        occupied: false,
+        custom: true,
+        current_bid: 0,
+        current_buy_now_price_euros: req.body.start_price_euros * 2,
+        average_buy_price: 0,
+        bought_times: 0,
+        last_bid_username: "None",
+        last_bid_time: BigInt(0),
+        occupied_by: "Unknown",
     };
 
     await Database.insertInto("parking_spots", parkingSpot);
+
+    return respond(res, StatusCodes.OK, parkingSpot);
+});
+
+ParkingHandler.get("/:id", async (req, res) => {
+    await extractUser(req);
+    const parkingSpot = await Database.selectOneFrom("parking_spots", "*", {
+        id: req.params.id,
+    });
+
+    if (!parkingSpot) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    return respond(res, StatusCodes.OK, parkingSpot);
+});
+
+ParkingHandler.post("/:id/bid", async (req, res) => {
+    const user = await extractUser(req);
+
+    const parkingSpot = await Database.selectOneFrom("parking_spots", "*", {
+        id: req.params.id,
+    });
+
+    if (!parkingSpot) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    const nextBid = Math.max(
+        parkingSpot.start_price_euros,
+        parkingSpot.current_bid + parkingSpot.bid_increment
+    );
+
+    await Database.update(
+        "parking_spots",
+        {
+            current_bid: nextBid,
+            last_bid_username: user.username,
+            current_buy_now_price_euros: nextBid * 2,
+            last_bid_time: BigInt(Date.now()),
+        },
+        {
+            id: parkingSpot.id,
+        }
+    );
+
+    setTimeout(async () => {
+        const spot = await Database.selectOneFrom("parking_spots", "*", {
+            id: parkingSpot.id,
+        });
+
+        if (
+            !(
+                spot &&
+                !spot.occupied &&
+                spot.last_bid_username === user.username &&
+                spot.current_bid === nextBid
+            )
+        )
+            return;
+
+        await Database.update(
+            "parking_spots",
+            {
+                occupied: true,
+                occupied_by: user.username,
+                last_bid_time: BigInt(0),
+            },
+            {
+                id: parkingSpot.id,
+            }
+        );
+    }, 20_000);
 
     return respond(res, StatusCodes.OK, parkingSpot);
 });
@@ -59,7 +147,7 @@ const ReserveSchema = Type.Object({
     endM: Type.Number(),
 });
 
-ParkingHandler.post("/:id/reserve", useValidation(ReserveSchema), async (req, res) => {
+ParkingHandler.post("/:id/buy_now", useValidation(ReserveSchema), async (req, res) => {
     const user = await extractUser(req);
 
     const parkingSpot = await Database.selectOneFrom("parking_spots", "*", {

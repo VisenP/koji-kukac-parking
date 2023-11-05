@@ -8,12 +8,12 @@ type ReserveParkingSpotVariables = {
     endM: number;
 };
 
-export const useReserveParkingSpot: MutationHandler<
+export const useBuyParkingSpot: MutationHandler<
     ReserveParkingSpotVariables,
     ParkingSpot,
     string
 > = (parkingSpotId, options) =>
     useMutation(
-        (variables) => http.post(`/parking/${parkingSpotId}/reserve`, variables),
+        (variables) => http.post(`/parking/${parkingSpotId}/buy_now`, variables),
         invalidateOnSuccess([["parking", parkingSpotId]], options)
     );

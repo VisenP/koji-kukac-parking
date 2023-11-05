@@ -12,6 +12,10 @@ export const AdminPage: FC = () => {
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
     const [zone, setZone] = useState("Zone1");
+    const [startPrice, setStartPrice] = useState(1);
+    const [bidIncrement, setBidIncrement] = useState(0.5);
+    const [disabled, setDisabled] = useState(false);
+    const [electric, setElectric] = useState(false);
 
     const zones = ["Zone1", "Zone2", "Zone3", "Zone4"];
 
@@ -24,6 +28,10 @@ export const AdminPage: FC = () => {
                 latitude: lat,
                 longitude: lng,
                 occupied: false,
+                start_price_euros: startPrice,
+                bin_increment: bidIncrement,
+                disabled: disabled,
+                electric: electric,
             })
             .then((r) => r.data.data);
 
@@ -51,16 +59,59 @@ export const AdminPage: FC = () => {
                         </select>
                     </div>
                     <div tw={"flex flex-col m-2 gap-2"}>
+                        <span>Latitude:</span>
                         <input
                             type={"number"}
                             onChange={(event) => setLat(Number(event.target.value))}
                             value={Math.round(lat * 100_000) / 100_000}
+                            tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
                         />
+
+                        <span>Longitude:</span>
                         <input
                             type={"number"}
                             onChange={(event) => setLng(Number(event.target.value))}
                             value={Math.round(lng * 100_000) / 100_000}
+                            tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
                         />
+
+                        <span>Start price:</span>
+                        <input
+                            type={"number"}
+                            onChange={(event) => setStartPrice(Number(event.target.value))}
+                            value={startPrice}
+                            tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
+                        />
+
+                        <span>Bid increment:</span>
+                        <input
+                            type={"number"}
+                            onChange={(event) => setBidIncrement(Number(event.target.value))}
+                            value={bidIncrement}
+                            tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
+                        />
+                        <div tw={"flex flex-row gap-2"}>
+                            <span tw={"flex items-center"}>
+                                Disabled:
+                                <input
+                                    type={"checkbox"}
+                                    title={"Disabled"}
+                                    onChange={() => setDisabled(!disabled)}
+                                    checked={disabled}
+                                    tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
+                                />
+                            </span>
+                            <span tw={"flex items-center"}>
+                                Electric:
+                                <input
+                                    type={"checkbox"}
+                                    title={"Electric"}
+                                    onChange={() => setElectric(!electric)}
+                                    checked={electric}
+                                    tw={"border-2 border-solid border-neutral-200 rounded-lg p-2"}
+                                />
+                            </span>
+                        </div>
                     </div>
                 </form>
                 <button
@@ -80,13 +131,6 @@ export const AdminPage: FC = () => {
                             setLng(b);
                         }}
                         data={spots}
-                        special={{
-                            id: "",
-                            latitude: lat,
-                            longitude: lng,
-                            zone: zone,
-                            occupied: false,
-                        }}
                     />
                 </div>
             )}
